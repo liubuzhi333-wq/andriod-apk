@@ -1,0 +1,20 @@
+V16 GitHub 根目录直接上传版
+
+重要：解压后，不要再创建 androidproj 文件夹。
+请把本压缩包解压后第一层的全部内容直接上传到 GitHub 仓库根目录。
+
+上传完成后，仓库根目录应直接看到：
+- .github/
+- app/
+- build.gradle.kts
+- settings.gradle.kts
+- README.md
+
+关键路径必须是：
+.github/workflows/build-apk.yml
+
+然后：
+GitHub -> Actions -> 左侧 Build APK -> Run workflow
+
+注意：GitHub 网页上传界面可能不方便显示隐藏目录 .github。
+如果解压后系统隐藏了 .github，请确认它也被上传。若仓库中没有 .github/workflows/build-apk.yml，Actions 左侧不会出现 Build APK。

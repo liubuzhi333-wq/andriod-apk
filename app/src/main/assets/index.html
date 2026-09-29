@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>36.5度智能温度调节西服｜86寸透明屏V12</title>
+<style>
+:root{
+  --cyan:#8fdcff;
+  --cyan2:#5bc4ff;
+  --text:#f7fafc;
+  --sub:rgba(238,244,248,.90);
+  --muted:rgba(215,225,232,.76);
+  --line:rgba(162,205,224,.42);
+  --line-soft:rgba(162,205,224,.15);
+  --panel:rgba(37,41,45,.42);
+  --panel-strong:rgba(31,35,39,.56);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#363a3e;color:var(--text);font-family:"Microsoft YaHei","PingFang SC","Segoe UI",Arial,sans-serif}
+button{font:inherit}
+#fit{position:absolute;left:50%;top:50%;width:3840px;height:2160px;transform-origin:center center}
+.stage{position:relative;width:3840px;height:2160px;overflow:hidden;background:linear-gradient(180deg,#3b3f43 0%,#35393d 52%,#303438 100%)}
+.stage::before{content:"";position:absolute;inset:28px;border:2px solid rgba(143,220,255,.22);border-radius:30px;pointer-events:none}
+.corner{position:absolute;width:120px;height:120px;pointer-events:none}
+.corner.tl{left:28px;top:28px;border-left:4px solid var(--cyan);border-top:4px solid var(--cyan)}
+.corner.tr{right:28px;top:28px;border-right:4px solid var(--cyan);border-top:4px solid var(--cyan)}
+.corner.bl{left:28px;bottom:28px;border-left:4px solid var(--cyan);border-bottom:4px solid var(--cyan)}
+.corner.br{right:28px;bottom:28px;border-right:4px solid var(--cyan);border-bottom:4px solid var(--cyan)}
+
+.header{position:absolute;left:110px;top:60px;width:1800px}
+.title-cn{font-size:78px;font-weight:800;line-height:1.05;letter-spacing:2px;text-shadow:0 0 28px rgba(91,196,255,.24)}
+.title-en{margin-top:18px;font-size:30px;letter-spacing:6px;color:var(--sub)}
+.header-line{display:none}
+.micro{position:absolute;right:110px;top:76px;text-align:right;font-size:28px;font-weight:650;line-height:1.4;letter-spacing:3px}
+.micro span{font-size:18px;letter-spacing:2px;color:var(--muted)}
+
+/* 左右完全对称：列宽/上下卡片高度一致 */
+.column{position:absolute;top:310px;width:1120px;height:1735px;display:grid;grid-template-rows:1340px 345px;gap:50px}
+.left-col{left:105px}
+.right-col{right:105px}
+
+.panel{position:relative;border:2px solid var(--line);border-radius:28px;background:var(--panel);box-shadow:0 0 30px rgba(91,196,255,.08),inset 0 0 28px rgba(91,196,255,.04);overflow:hidden}
+.panel::before{content:"";position:absolute;inset:14px;border:1px solid var(--line-soft);border-radius:20px;pointer-events:none}
+.panel-inner{position:absolute;inset:34px;z-index:2}
+.panel-title{font-size:50px;font-weight:800;line-height:1.1;letter-spacing:1px}
+.panel-sub{margin-top:10px;font-size:22px;letter-spacing:4px;color:var(--cyan);font-weight:600}
+
+.state{position:absolute;right:0;top:0;padding:12px 20px;border-radius:999px;border:1px solid rgba(143,220,255,.36);background:rgba(0,0,0,.35);font-size:22px;font-weight:700;color:#eefaff}
+
+/* 左上 3D视觉旋转 */
+.model-stage{position:absolute;left:-34px;right:-34px;top:-34px;bottom:-34px;overflow:visible;touch-action:none;z-index:1}
+.model-transform{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;will-change:transform}
+#modelFrame{width:auto;height:110%;max-width:none;object-fit:contain;pointer-events:none;image-rendering:auto;filter:none}
+.controls{position:absolute;left:0;right:0;bottom:0;height:72px;display:flex;align-items:center;justify-content:flex-end;gap:24px}
+.hint{font-size:24px;color:var(--sub);letter-spacing:.5px}
+.btns{display:flex;gap:14px}
+.btn{height:60px;padding:0 28px;border-radius:14px;border:1px solid rgba(143,220,255,.42);background:rgba(28,31,34,.42);color:white;font-size:24px;font-weight:700}
+.btn:active{background:rgba(35,110,155,.30)}
+
+/* 左下科技说明 */
+.tech-grid{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.tech-item{min-height:168px;padding:20px 20px 18px;border:1px solid rgba(143,220,255,.32);border-radius:22px;background:rgba(36,39,42,.28);display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.tech-num{font-size:44px;font-weight:900;line-height:1.04;color:#f2fbff}
+.tech-name{font-size:28px;font-weight:800;margin-top:14px;line-height:1.18}
+.tech-en{font-size:15px;line-height:1.35;letter-spacing:1px;color:var(--cyan);margin-top:8px}
+
+/* 右上热力 */
+.thermal-stage{position:absolute;left:-34px;right:-34px;top:-34px;bottom:-34px;overflow:visible;touch-action:none;background:transparent;z-index:1}
+.thermal-inner{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform}
+.thermal-img{position:absolute;inset:-4%;width:108%;height:108%;object-fit:contain;opacity:0;transition:opacity .18s linear;pointer-events:none}
+.thermal-img.active{opacity:1}
+.view-row{position:absolute;left:0;right:0;bottom:0;height:82px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.view-btn{border:1px solid rgba(143,220,255,.34);border-radius:14px;background:rgba(28,31,34,.36);color:var(--sub);font-size:26px;font-weight:700}
+.view-btn.active{border-color:#a8e9ff;background:rgba(52,143,195,.24);color:white}
+
+/* 右下温度分布，与左下卡片严格同尺寸 */
+.scale-block{position:absolute;left:0;right:0;bottom:8px;margin-top:0}
+.bar{position:relative;height:38px;border-radius:999px;background:linear-gradient(90deg,#ff4f3c 0%,#ff9c4b 23%,#ffe276 43%,#92eab5 64%,#4bcdf4 82%,#3565ff 100%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.16),0 0 24px rgba(91,196,255,.10)}
+.comfort-dot{position:absolute;left:52%;top:50%;width:34px;height:34px;border-radius:50%;transform:translate(-50%,-50%);background:white;border:7px solid #b8f4ff;box-shadow:0 0 28px #78dcff}
+.scale-labels{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:26px}
+.scale-label{text-align:center;font-size:24px;font-weight:700;line-height:1.35}
+.scale-label span{display:block;margin-top:5px;font-size:16px;font-weight:500;color:var(--muted)}
+
+/* 中央实体模特完全留空 */
+.safe-zone{position:absolute;left:1340px;top:320px;width:1160px;height:1700px;pointer-events:none}
+.safe-line-l,.safe-line-r{position:absolute;top:220px;bottom:220px;width:1px;background:linear-gradient(180deg,transparent,rgba(143,220,255,.12),transparent)}
+.safe-line-l{left:0}.safe-line-r{right:0}
+.safe-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#dff8ff;box-shadow:0 0 18px #6ed6ff;opacity:.35}
+.safe-dot.a{left:-4px;top:510px}.safe-dot.b{right:-4px;top:760px}
+
+/* V4：下区精简后，标题与核心内容保持清晰；左右结构严格对称 */
+.left-col > .panel:nth-child(2) .panel-inner,
+.right-col > .panel:nth-child(2) .panel-inner{inset:32px 34px}
+.left-col > .panel:nth-child(2) .panel-title,
+.right-col > .panel:nth-child(2) .panel-title{font-size:48px}
+.left-col > .panel:nth-child(2) .panel-sub,
+.right-col > .panel:nth-child(2) .panel-sub{font-size:21px}
+.right-col > .panel:nth-child(2) .scale-label{font-size:22px}
+.right-col > .panel:nth-child(2) .scale-label span{font-size:15px}
+
+
+/* V5 clean adjustments */
+.left-col > .panel:nth-child(2) .panel-inner,
+.right-col > .panel:nth-child(2) .panel-inner{inset:22px 28px 22px 28px}
+.left-col > .panel:nth-child(2) .panel-title,
+.right-col > .panel:nth-child(2) .panel-title{font-size:40px}
+.left-col > .panel:nth-child(2) .panel-sub,
+.right-col > .panel:nth-child(2) .panel-sub{font-size:17px;margin-top:6px}
+
+
+/* V10 纯清晰展示：去除模特周围光晕与装饰元素 */
+.model-stage::before{display:none}
+.panel{
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+
+
+/* V11：展示内容可拖动/缩放到整个上方面板，外层 panel 作为唯一裁切边界 */
+.left-col > .panel:first-child .panel-title,
+.left-col > .panel:first-child .panel-sub,
+.right-col > .panel:first-child .panel-title,
+.right-col > .panel:first-child .panel-sub{
+  position:relative;
+  z-index:8;
+  pointer-events:none;
+}
+.controls,.view-row{
+  z-index:10;
+}
+.model-transform,.thermal-inner{
+  z-index:2;
+}
+
+
+/* V12：功能按钮移到上下两区之间；下方卡片缩小沉底 */
+.column > .panel:nth-child(2){
+  height:280px;
+  align-self:end;
+}
+.left-col > .controls{
+  position:absolute;
+  left:0;
+  right:0;
+  top:1356px;
+  height:78px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  pointer-events:none;
+}
+.left-col > .controls .btns{
+  pointer-events:auto;
+}
+.right-col > .view-row{
+  position:absolute;
+  left:0;
+  right:0;
+  top:1354px;
+  bottom:auto;
+  height:82px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  z-index:20;
+}
+.right-col > .view-row .view-btn{
+  pointer-events:auto;
+}
+
+/* 下方科技卡片：在更矮的面板内保持清晰 */
+.left-col > .panel:nth-child(2) .panel-inner{
+  inset:18px 24px 18px 24px;
+}
+.left-col > .panel:nth-child(2) .panel-title{
+  font-size:36px;
+}
+.left-col > .panel:nth-child(2) .panel-sub{
+  font-size:15px;
+  margin-top:4px;
+}
+.left-col > .panel:nth-child(2) .tech-grid{
+  bottom:0;
+  gap:14px;
+}
+.left-col > .panel:nth-child(2) .tech-item{
+  min-height:150px;
+  padding:16px 16px 14px;
+}
+.left-col > .panel:nth-child(2) .tech-num{
+  font-size:40px;
+}
+.left-col > .panel:nth-child(2) .tech-name{
+  font-size:26px;
+  margin-top:10px;
+}
+.left-col > .panel:nth-child(2) .tech-en{
+  font-size:14px;
+  margin-top:6px;
+}
+
+/* 右下温度分布：矩形框缩小并沉底，温标文字贴近卡尺 */
+.right-col > .panel:nth-child(2) .panel-inner{
+  inset:16px 24px 14px 24px;
+}
+.right-col > .panel:nth-child(2) .panel-title{
+  font-size:36px;
+  margin-top:8px;
+}
+.right-col > .panel:nth-child(2) .panel-sub{
+  font-size:15px;
+  margin-top:4px;
+}
+.right-col > .panel:nth-child(2) .scale-block{
+  left:0;
+  right:0;
+  bottom:2px;
+}
+.right-col > .panel:nth-child(2) .scale-labels{
+  margin-top:12px;
+}
+.right-col > .panel:nth-child(2) .scale-label{
+  font-size:21px;
+  line-height:1.25;
+}
+.right-col > .panel:nth-child(2) .scale-label span{
+  margin-top:3px;
+  font-size:14px;
+}
+
+
+/* V13：收窄左右区域、增加展示留白、3D按钮内置、温标上移 */
+.column{width:1000px;grid-template-rows:1405px 280px;gap:50px}
+.left-col{left:105px}
+.right-col{right:105px}
+
+/* 上方展示内容不再顶满矩形框，保留上下呼吸空间 */
+.model-stage{left:18px;right:18px;top:118px;bottom:86px;overflow:hidden}
+#modelFrame{height:94%;max-height:94%}
+.thermal-stage{left:18px;right:18px;top:118px;bottom:86px;overflow:hidden}
+.thermal-img{inset:4%;width:92%;height:92%}
+
+/* 重置/播放移入3D动态展示框左下角 */
+.left-col > .controls{left:34px;right:auto;top:1310px;width:auto;height:66px;justify-content:flex-start}
+.left-col > .controls .btns{gap:14px}
+.left-col > .controls .btn{height:56px;padding:0 24px;font-size:22px}
+
+/* 右侧视角按钮仍位于上下区域之间，适配收窄后的列宽 */
+.right-col > .view-row{top:1421px;height:72px;gap:12px}
+.right-col > .view-row .view-btn{font-size:23px}
+
+/* 温度分布：色标整体上移，缩短标题与卡尺之间的空档 */
+.right-col > .panel:nth-child(2) .scale-block{bottom:28px}
+.right-col > .panel:nth-child(2) .scale-labels{margin-top:10px}
+
+/* 中央留白随两侧收窄同步扩大 */
+.safe-zone{left:1220px;width:1400px}
+
+
+/* V14：右上热力分析区域整体上移，避免四视角按钮与下方温度分布框重叠 */
+.right-col > .panel:first-child{
+  transform:translateY(-42px);
+}
+.right-col > .view-row{
+  top:1372px;
+}
+
+/* Android touch optimization */
+#modelStage,#thermalStage{touch-action:none!important;overscroll-behavior:none;-webkit-user-select:none;user-select:none;}
+</style>
+</head>
+<body>
+<div id="fit">
+  <main class="stage">
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <header class="header">
+      <div class="title-cn">36.5度智能温度调节西服</div>
+      <div class="title-en">36.5 SMART TEMPERATURE-REGULATING SUIT</div>
+      <div class="header-line"></div>
+    </header>
+    <div class="micro">科技 / 舒适 / 专业<br><span>TECHNOLOGY / COMFORT / PROFESSIONAL</span></div>
+
+    <div class="column left-col">
+      <section class="panel">
+        <div class="panel-inner">
+          <div class="panel-title">3D动态展示</div>
+          <div class="panel-sub">360° ROTATION DISPLAY</div>
+          <div class="model-stage" id="modelStage">
+            <div class="model-transform" id="modelTransform">
+              <video id="modelFrame" src="media/model_rotation.mp4" autoplay muted loop playsinline preload="auto"></video>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-inner">
+          <div class="panel-title">36.5度恒温科技</div>
+          <div class="panel-sub">36.5 THERMAL TECHNOLOGY</div>
+          <div class="tech-grid">
+            <div class="tech-item">
+              <div class="tech-num">36.5°</div>
+              <div class="tech-name">智能调温</div>
+              <div class="tech-en">SMART THERMAL<br>REGULATION</div>
+            </div>
+            <div class="tech-item">
+              <div class="tech-num">5×</div>
+              <div class="tech-name">快速排湿</div>
+              <div class="tech-en">MOISTURE<br>TRANSFER</div>
+            </div>
+            <div class="tech-item">
+              <div class="tech-num">CARBON</div>
+              <div class="tech-name">天然活性碳</div>
+              <div class="tech-en">NATURAL ACTIVATED<br>CARBON</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="controls">
+            <div class="btns">
+              <button class="btn" id="modelReset">重置</button>
+              <button class="btn" id="modelToggle">暂停</button>
+            </div>
+          </div>
+    </div>
+
+    <div class="safe-zone">
+      <div class="safe-line-l"></div><div class="safe-line-r"></div>
+      <div class="safe-dot a"></div><div class="safe-dot b"></div>
+    </div>
+
+    <div class="column right-col">
+      <section class="panel">
+        <div class="panel-inner">
+          <div class="panel-title">热力分析</div>
+          <div class="panel-sub">THERMAL ANALYSIS</div>
+          <div class="thermal-stage" id="thermalStage">
+            <div class="thermal-inner" id="thermalInner">
+              <img class="thermal-img active" src="media/thermal_1.png" data-name="正面 / FRONT">
+              <img class="thermal-img" src="media/thermal_2.png" data-name="右侧 / RIGHT">
+              <img class="thermal-img" src="media/thermal_3.png" data-name="背面 / BACK">
+              <img class="thermal-img" src="media/thermal_4.png" data-name="左侧 / LEFT">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-inner">
+          <div class="panel-title">温度分布</div>
+          <div class="panel-sub">THERMAL SCALE</div>
+          <div class="scale-block">
+            <div class="bar"><div class="comfort-dot"></div></div>
+            <div class="scale-labels">
+              <div class="scale-label">高温<span>High Temp</span></div>
+              <div class="scale-label">体表热区<span>Skin Heat Zone</span></div>
+              <div class="scale-label">36.5°舒适区<span>36.5° Comfort Zone</span></div>
+              <div class="scale-label">温感均衡<span>Thermal Balance</span></div>
+              <div class="scale-label">低温<span>Low Temp</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="view-row">
+            <button class="view-btn active" data-index="0">正面</button>
+            <button class="view-btn" data-index="1">右侧</button>
+            <button class="view-btn" data-index="2">背面</button>
+            <button class="view-btn" data-index="3">左侧</button>
+          </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const fit = document.getElementById('fit');
+function resize(){
+  const s=Math.min(innerWidth/3840,innerHeight/2160);
+  fit.style.transform=`translate(-50%,-50%) scale(${s})`;
+}
+addEventListener('resize',resize);resize();
+
+/* 本地 MP4 旋转展示：减少 GitHub 文件数量，并提升 Android WebView 播放稳定性 */
+const frameImg=document.getElementById('modelFrame');
+const modelState=document.getElementById('modelState');
+const modelToggle=document.getElementById('modelToggle');
+const modelReset=document.getElementById('modelReset');
+const modelStage=document.getElementById('modelStage');
+const modelTransform=document.getElementById('modelTransform');
+
+let playing=true;
+let scale=1,panX=0,panY=0,pointers=new Map(),moved=false;
+let pinchDist=0,pinchScale=1,dragX=0,dragY=0,startPanX=0,startPanY=0;
+
+function updateModel(){
+  if(modelState) modelState.textContent=playing?'播放中':'已暂停';
+  modelToggle.textContent=playing?'暂停':'播放';
+}
+function toggleModel(){
+  if(frameImg.paused){ frameImg.play().catch(()=>{}); playing=true; }
+  else { frameImg.pause(); playing=false; }
+  updateModel();
+}
+function applyModel(){modelTransform.style.transform=`translate(${panX}px,${panY}px) scale(${scale})`;}
+function resetModel(){
+  frameImg.pause(); frameImg.currentTime=0; playing=false;
+  scale=1;panX=0;panY=0;applyModel();updateModel();
+}
+frameImg.addEventListener('playing',()=>{playing=true;updateModel();});
+frameImg.addEventListener('pause',()=>{playing=false;updateModel();});
+frameImg.play().catch(()=>{});
+modelToggle.onclick=e=>{e.stopPropagation();toggleModel();};
+modelReset.onclick=e=>{e.stopPropagation();resetModel();};
+
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+modelStage.addEventListener('pointerdown',e=>{
+  modelStage.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  moved=false;
+  if(pointers.size===1){dragX=e.clientX;dragY=e.clientY;startPanX=panX;startPanY=panY}
+  if(pointers.size===2){const p=[...pointers.values()];pinchDist=dist(p[0],p[1]);pinchScale=scale;moved=true}
+});
+modelStage.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId))return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===2){
+    const p=[...pointers.values()];
+    scale=Math.max(.65,Math.min(3.5,pinchScale*dist(p[0],p[1])/Math.max(1,pinchDist)));
+    moved=true;applyModel();return;
+  }
+  const dx=e.clientX-dragX,dy=e.clientY-dragY;
+  if(Math.hypot(dx,dy)>7)moved=true;
+  if(moved){panX=startPanX+dx;panY=startPanY+dy;applyModel();}
+});
+function modelEnd(e){
+  const one=pointers.size===1;
+  pointers.delete(e.pointerId);
+  if(one&&!moved)toggleModel();
+}
+modelStage.addEventListener('pointerup',modelEnd);
+modelStage.addEventListener('pointercancel',e=>pointers.delete(e.pointerId));
+
+/* 热力四视角 */
+const thermalImgs=[...document.querySelectorAll('.thermal-img')];
+const viewBtns=[...document.querySelectorAll('.view-btn')];
+const thermalLabel=document.getElementById('thermalLabel');
+const thermalState=document.getElementById('thermalState');
+const thermalStage=document.getElementById('thermalStage');
+const thermalInner=document.getElementById('thermalInner');
+
+let ti=0,tPaused=false,tScale=1,tX=0,tY=0,tPointers=new Map(),tMoved=false;
+let tPD=0,tPS=1,tDX=0,tDY=0,tSX=0,tSY=0;
+
+function showThermal(i){
+  ti=(i+4)%4;
+  thermalImgs.forEach((x,n)=>x.classList.toggle('active',n===ti));
+  viewBtns.forEach((x,n)=>x.classList.toggle('active',n===ti));
+  if(thermalLabel) thermalLabel.textContent=thermalImgs[ti].dataset.name;
+}
+setInterval(()=>{if(!tPaused)showThermal(ti+1)},1200);
+
+viewBtns.forEach((b,i)=>b.onclick=()=>{
+  showThermal(i);tPaused=true;if(thermalState) thermalState.textContent='已暂停';
+});
+
+function applyThermal(){thermalInner.style.transform=`translate(${tX}px,${tY}px) scale(${tScale})`;}
+thermalStage.addEventListener('pointerdown',e=>{
+  thermalStage.setPointerCapture(e.pointerId);
+  tPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  tMoved=false;
+  if(tPointers.size===1){tDX=e.clientX;tDY=e.clientY;tSX=tX;tSY=tY}
+  if(tPointers.size===2){const p=[...tPointers.values()];tPD=dist(p[0],p[1]);tPS=tScale;tMoved=true}
+});
+thermalStage.addEventListener('pointermove',e=>{
+  if(!tPointers.has(e.pointerId))return;
+  tPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(tPointers.size===2){
+    const p=[...tPointers.values()];
+    tScale=Math.max(.65,Math.min(3,tPS*dist(p[0],p[1])/Math.max(1,tPD)));
+    tMoved=true;applyThermal();return;
+  }
+  const dx=e.clientX-tDX,dy=e.clientY-tDY;
+  if(Math.hypot(dx,dy)>7)tMoved=true;
+  if(tMoved){tX=tSX+dx;tY=tSY+dy;applyThermal();}
+});
+thermalStage.addEventListener('pointerup',e=>{
+  const one=tPointers.size===1;
+  tPointers.delete(e.pointerId);
+  if(one&&!tMoved){
+    tPaused=!tPaused;
+    if(thermalState) thermalState.textContent=tPaused?'已暂停':'自动旋转';
+  }
+});
+thermalStage.addEventListener('pointercancel',e=>tPointers.delete(e.pointerId));
+</script>
+</body>
+</html>
